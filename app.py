@@ -4,6 +4,7 @@ import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
+import os
 
 # ========== Fix Chinese display issues ==========
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC']
@@ -21,8 +22,12 @@ with st.spinner("Loading model..."):
         except ImportError:
             pass
         
-        # Model path
-        model_path = "D:/HuaweiMoveData/Users/wei/Desktop/机器学习代码/机器学习预测模型全流程代码_全网同名_派大珍/2.1Python机器学习建模与评估_非标准化数据/2.训练集构建模型/xgb_model.pkl"
+        # Model path - use relative path for cloud deployment
+        model_path = os.path.join(os.path.dirname(__file__), "xgb_model.pkl")
+        
+        # If file not found, try alternative path
+        if not os.path.exists(model_path):
+            model_path = "xgb_model.pkl"
         
         with open(model_path, "rb") as f:
             classifier = pickle.load(f)
@@ -136,8 +141,6 @@ with st.spinner("Loading model..."):
                 
             except Exception as e:
                 st.warning(f"Feature importance analysis failed: {str(e)}")
-                import traceback
-                st.code(traceback.format_exc())
         
         # Sidebar instructions
         with st.sidebar:
@@ -168,9 +171,4 @@ with st.spinner("Loading model..."):
     
     except Exception as e:
         st.error(f"Failed to load: {str(e)}")
-        st.info("Please check if the model file path is correct")
-            if hasattr(classifier, 'predict_proba'):
-                st.write("✅ 模型支持概率预测")
-            
-    except Exception as e:
-        st.error(f"加载失败：{str(e)}")
+        st.info("Please check if the model file exists")
